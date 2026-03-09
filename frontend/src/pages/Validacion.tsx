@@ -11,11 +11,14 @@ type Requerimiento = {
     prioridad?: "Alta" | "Media" | "Baja"
     autor?: string
     timestamp_ms?: number
+    check_po?: boolean
+    check_qa?: boolean
 }
 
 export default function Validacion() {
 
     const navigate = useNavigate();
+    const rol = localStorage.getItem("rol");
 
     const [busqueda, setBusqueda] = useState("");
     const [estadoFiltro, setEstadoFiltro] = useState<string | null>(null);
@@ -43,43 +46,55 @@ export default function Validacion() {
 
     });
 
-    useEffect(() => {
+    async function cargarRequerimientos() {
 
         setLoading(true);
 
-        getRequerimientos("todos")
-            .then((res) => {
+        try {
 
-                const lista = Array.isArray(res?.data)
-                    ? res.data.filter((r: any) => r.estado !== "Finalizado")
-                    : [];
+            const res = await getRequerimientos("todos");
 
-                const prioridadOrden: any = {
-                    Alta: 1,
-                    Media: 2,
-                    Baja: 3
-                };
+            const lista = Array.isArray(res?.data)
+                ? res.data.filter((r: any) => r.estado !== "Finalizado")
+                : [];
 
-                lista.sort((a: any, b: any) => {
+            const prioridadOrden: any = {
+                Alta: 1,
+                Media: 2,
+                Baja: 3
+            };
 
-                    const prioridad =
-                        (prioridadOrden[a.prioridad] || 4) -
-                        (prioridadOrden[b.prioridad] || 4);
+            lista.sort((a: any, b: any) => {
 
-                    if (prioridad !== 0) return prioridad;
+                const prioridad =
+                    (prioridadOrden[a.prioridad] || 4) -
+                    (prioridadOrden[b.prioridad] || 4);
 
-                    const fechaA = Number(a.timestamp_ms || 0);
-                    const fechaB = Number(b.timestamp_ms || 0);
+                if (prioridad !== 0) return prioridad;
 
-                    return fechaB - fechaA;
+                const fechaA = Number(a.timestamp_ms || 0);
+                const fechaB = Number(b.timestamp_ms || 0);
 
-                });
+                return fechaB - fechaA;
 
-                setRequerimientos(lista);
+            });
 
-            })
-            .finally(() => setLoading(false));
+            setRequerimientos(lista);
 
+        } catch (error) {
+
+            console.error("Error cargando requerimientos", error);
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    }
+
+    useEffect(() => {
+        cargarRequerimientos();
     }, []);
 
 
@@ -331,6 +346,17 @@ export default function Validacion() {
                                             : "Sin fecha"}
 
                                     </span>
+                                    <div className="val-validaciones">
+
+                                        <span className={`val-chip ${req.check_po ? "ok" : "pendiente"}`}>
+                                            👤 PO: {req.check_po ? "✅" : "⏳"}
+                                        </span>
+
+                                        <span className={`val-chip ${req.check_qa ? "ok" : "pendiente"}`}>
+                                            🛡 QA: {req.check_qa ? "✅" : "⏳"}
+                                        </span>
+
+                                    </div>
 
                                 </div>
 
@@ -349,15 +375,17 @@ export default function Validacion() {
 
                                 </div>
 
-                                <button
-                                    className="btn-finalizar"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        finalizarRequerimiento(req.id);
-                                    }}
-                                >
-                                    Finalizar
-                                </button>
+                                {rol !== "manager" && (
+                                    <button
+                                        className="btn-finalizar"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            finalizarRequerimiento(req.id);
+                                        }}
+                                    >
+                                        Finalizar
+                                    </button>
+                                )}
 
                             </div>
 

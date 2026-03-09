@@ -25,6 +25,8 @@ type Req = {
 
 export default function ValidacionRequerimiento() {
 
+    const rol = localStorage.getItem("rol");
+
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -60,7 +62,13 @@ export default function ValidacionRequerimiento() {
 
     async function actualizarValidacion(nuevoPO: boolean, nuevoQA: boolean) {
 
-        if (!id) return;
+        if (!id || !requerimiento) return;
+
+        const confirmar = window.confirm(
+            `¿Estás seguro de aprobar el requerimiento ${requerimiento.id}?`
+        );
+
+        if (!confirmar) return;
 
         setPo(nuevoPO);
         setQa(nuevoQA);
@@ -131,8 +139,13 @@ export default function ValidacionRequerimiento() {
 
         if (!requerimiento) return;
 
-        if (!(po && qa)) {
-            alert("⚠️ Falta validación PO o QA");
+        if (!po) {
+            alert("⚠️ Falta validación Product Owner");
+            return;
+        }
+
+        if (!qa) {
+            alert("⚠️ Falta validación QA");
             return;
         }
 
@@ -179,8 +192,7 @@ export default function ValidacionRequerimiento() {
                     fecha_envio_jira: new Date().toLocaleString()
                 }
             );
-
-            alert(`✅ Ticket creado: ${response.issueKey}`);
+            alert(`✅ Requerimiento ${requerimiento.id} enviado a Jira!\n🎫 Ticket en Jira: ${response.issueKey}`);
 
             navigate("/validacion");
 
@@ -282,50 +294,44 @@ export default function ValidacionRequerimiento() {
 
                                 <div className="check-group">
 
-                                    <label className="check-card">
 
-                                        <input
-                                            type="checkbox"
-                                            checked={po}
-                                            onChange={(e) =>
-                                                actualizarValidacion(e.target.checked, qa)
-                                            }
-                                        />
+                                    {rol === "po" && (
+                                        <label className="check-card">
 
-                                        <div className="card-content">
+                                            <input
+                                                type="checkbox"
+                                                checked={po}
+                                                onChange={(e) =>
+                                                    actualizarValidacion(e.target.checked, qa)
+                                                }
+                                            />
 
-                                            <span className="check-icon">👤</span>
+                                            <div className="card-content">
+                                                <span className="check-icon">👤</span>
+                                                <span className="check-text">Product Owner</span>
+                                            </div>
 
-                                            <span className="check-text">
-                                                Product Owner
-                                            </span>
+                                        </label>
+                                    )}
 
-                                        </div>
+                                    {rol === "qa" && (
+                                        <label className="check-card">
 
-                                    </label>
+                                            <input
+                                                type="checkbox"
+                                                checked={qa}
+                                                onChange={(e) =>
+                                                    actualizarValidacion(po, e.target.checked)
+                                                }
+                                            />
 
+                                            <div className="card-content">
+                                                <span className="check-icon">🛡️</span>
+                                                <span className="check-text">QA Técnica</span>
+                                            </div>
 
-                                    <label className="check-card">
-
-                                        <input
-                                            type="checkbox"
-                                            checked={qa}
-                                            onChange={(e) =>
-                                                actualizarValidacion(po, e.target.checked)
-                                            }
-                                        />
-
-                                        <div className="card-content">
-
-                                            <span className="check-icon">🛡️</span>
-
-                                            <span className="check-text">
-                                                QA Técnica
-                                            </span>
-
-                                        </div>
-
-                                    </label>
+                                        </label>
+                                    )}
 
                                 </div>
 
@@ -376,7 +382,6 @@ export default function ValidacionRequerimiento() {
 
                                     <button
                                         className="btn-primary"
-                                        disabled={!(po && qa)}
                                         onClick={aprobarYEnviar}
                                     >
                                         🚀 Aprobar y Enviar

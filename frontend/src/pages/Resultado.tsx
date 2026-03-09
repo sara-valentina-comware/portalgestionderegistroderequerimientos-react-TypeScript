@@ -91,6 +91,8 @@ export default function Resultado() {
         "Observaciones adicionales"
     ]
 
+
+    // DESCARGAR PDF
     function descargarPDF() {
 
 
@@ -198,7 +200,6 @@ export default function Resultado() {
 
         })
 
-        /* FOOTER CON PAGINACIÓN */
 
         const totalPaginas = pdf.getNumberOfPages()
 

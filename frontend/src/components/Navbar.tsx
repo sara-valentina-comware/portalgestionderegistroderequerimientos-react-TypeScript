@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { logout } from "../services/auth";
+import { useState } from "react";
 
 import logo from "../assets/img/logo blanco.png";
 import avatar from "../assets/img/avatar.png";
@@ -8,6 +9,11 @@ import logoutIcon from "../assets/img/log-out.png";
 export default function Navbar() {
 
     const rol = localStorage.getItem("rol");
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    function cerrarMenu() {
+        setMenuOpen(false);
+    }
 
     return (
 
@@ -21,21 +27,41 @@ export default function Navbar() {
                         <img src={logo} />
                     </Link>
 
-                    <div className="nav-links">
+                    <button
+                        className={`menu-toggle ${menuOpen ? "open" : ""}`}
+                        onClick={() => setMenuOpen(!menuOpen)}
+                    >
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
 
-                        <Link to="/inicio">
+                    <div className={`nav-links ${menuOpen ? "active" : ""}`}>
+
+                        <Link to="/inicio" onClick={cerrarMenu}>
                             Inicio
                         </Link>
 
-                        <Link to="/mis-requerimientos">
+                        <Link to="/mis-requerimientos" onClick={cerrarMenu}>
                             Mis Requerimientos
                         </Link>
 
                         {rol !== "user" && (
-                            <Link to="/validacion">
+                            <Link to="/validacion" onClick={cerrarMenu}>
                                 Validación
                             </Link>
                         )}
+
+                        <Link className="mobile-only" to="/perfil" onClick={cerrarMenu}>
+                            Perfil
+                        </Link>
+
+                        <button
+                            className="mobile-only logout-text"
+                            onClick={logout}
+                        >
+                            CERRAR SESIÓN
+                        </button>
 
                     </div>
 
@@ -58,5 +84,4 @@ export default function Navbar() {
         </header>
 
     );
-
 }

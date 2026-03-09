@@ -35,7 +35,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 
-/* POSTGRES CONNECTION */
+// ─── CONEXIÓN POSTGRESQL  ───────────────────────────────────────────────
 const pool = new Pool({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -52,7 +52,7 @@ pool.query("SELECT NOW()")
     .catch(err => console.error("Error DB:", err));
 
 
-/* LOGIN */
+// ─── LOGIN  ───────────────────────────────────────────────
 app.post("/login", async (req, res) => {
 
     const { usuario, password } = req.body;
@@ -175,7 +175,7 @@ app.post("/cambiar-password", async (req, res) => {
     }
 });
 
-// ─── NOVA DIRECTO ───────────────────────────────────────────
+// ─── NOVA  ───────────────────────────────────────────────
 
 let novaToken = null;
 let tokenExpira = 0;
@@ -196,7 +196,6 @@ async function obtenerTokenNova() {
 
     novaToken = loginResponse.data.token;
 
-    // Token válido por 50 minutos
     tokenExpira = Date.now() + (50 * 60 * 1000);
 
     return novaToken;
@@ -291,7 +290,9 @@ app.get("/requerimientos", async (req, res) => {
             autor,
             prioridad,
             contenido,
-            timestamp_ms
+            timestamp_ms,
+            check_po,
+            check_qa
         FROM requerimientos_pgrr
         WHERE autor = $1
         ORDER BY timestamp_ms DESC
@@ -309,7 +310,9 @@ app.get("/requerimientos", async (req, res) => {
             autor,
             prioridad,
             contenido,
-            timestamp_ms
+            timestamp_ms,
+            check_po,
+            check_qa
         FROM requerimientos_pgrr
         ORDER BY timestamp_ms DESC
         `;
@@ -336,7 +339,7 @@ app.get("/requerimientos", async (req, res) => {
     }
 });
 
-// Obtener un requerimiento por ID
+// REQUERIMIENTO POR ID
 app.get("/requerimientos/:id", async (req, res) => {
     try {
         const result = await pool.query(
@@ -381,7 +384,7 @@ app.get("/requerimientos/:id", async (req, res) => {
     }
 });
 
-// Crear requerimiento
+// CREAR REQUERIMIENTO
 app.post("/requerimientos", async (req, res) => {
     const {
         titulo,
@@ -456,7 +459,7 @@ app.post("/requerimientos", async (req, res) => {
     }
 });
 
-// Actualizar estado / campos de un requerimiento
+// ACTUALIZAR ESTADOS DEL REQUERIMIENTO
 app.patch("/requerimientos/:id", async (req, res) => {
     const { id } = req.params;
     const campos = req.body;
@@ -520,7 +523,7 @@ app.patch("/requerimientos/:id/validacion", async (req, res) => {
     }
 });
 
-// ENVIAR A JIRA
+// ─── ENVIAR JIRA  ───────────────────────────────────────────────
 async function obtenerSprintActivo() {
     const response = await axios.get(
         "https://comwaredev.atlassian.net/rest/agile/1.0/board/375/sprint?state=active",
@@ -600,7 +603,7 @@ function convertirATextoADF(texto) {
 
     lineas.forEach(linea => {
 
-        /* TITULOS (los que terminan en :) */
+        /* TITULOS */
         if (linea.endsWith(":")) {
 
             contenido.push({
@@ -684,15 +687,11 @@ app.post("/crear-jira", async (req, res) => {
 
         const summary = `[MANAGER] ${tipoCaso?.Subject || "REQ"} - ${tipoCaso?.IdByProject || ""}`;
 
-        /* convertir HTML a texto plano */
-
         const textoPlano = textoFinal
             ?.replace(/<br\s*\/?>/gi, "\n")
             ?.replace(/<\/p>/gi, "\n")
             ?.replace(/<[^>]+>/g, "")
             ?.trim();
-
-        /* formato Atlassian */
 
         const description = convertirATextoADF(textoPlano);
 
@@ -805,7 +804,7 @@ app.post("/crear-jira", async (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error("🔥 ERROR GLOBAL:", err);
+    console.error("ERROR GLOBAL:", err);
 
     if (err.type === "entity.too.large") {
         return res.status(413).json({

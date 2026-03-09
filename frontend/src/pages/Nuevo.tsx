@@ -131,7 +131,6 @@ export default function Nuevo() {
     }
 
 
-
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 
         if (!e.target.files) return;

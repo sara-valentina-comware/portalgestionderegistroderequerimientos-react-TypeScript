@@ -1,6 +1,6 @@
 const API_URL = "http://localhost:3000";
 
-/* LOGIN */
+// LOGIN
 
 export async function login(usuario: string, password: string) {
 
@@ -20,7 +20,7 @@ export async function login(usuario: string, password: string) {
 }
 
 
-/* PERFIL */
+// PERFIL
 
 export async function getPerfil(usuario: string) {
 
@@ -31,7 +31,7 @@ export async function getPerfil(usuario: string) {
 }
 
 
-/* CAMBIAR PASSWORD */
+// CAMBIAR CONTRASEÑA
 
 export async function cambiarPassword(
     usuario: string,
@@ -101,7 +101,7 @@ export async function getRequerimiento(id: string) {
 
 }
 
-/* CHATBOT */
+// CHATBOT
 export async function chatNova(message: string, threadId: string, files?: File[]) {
 
     const formData = new FormData();
@@ -148,7 +148,7 @@ export async function guardarValidacion(
     return res.json();
 }
 
-/* ENVIAR A JIRA */
+// ENVIAR A JIRA
 export async function enviarAJira(data: any) {
 
     const res = await fetch(`${API_URL}/crear-jira`, {
@@ -163,7 +163,7 @@ export async function enviarAJira(data: any) {
 }
 
 
-/* ACTUALIZAR REQUERIMIENTO */
+// ACTUALIZAR REQUERIMIENTO
 export async function actualizarRequerimiento(
     id: string,
     campos: any

@@ -9,12 +9,12 @@ export default function ProtectedRoute({ children, rolesPermitidos }: Props) {
 
   const rol = localStorage.getItem("rol");
 
-  /* si no está logueado */
+  // Si no está logueado
   if (!rol) {
     return <Navigate to="/" replace />;
   }
 
-  /* si no tiene permiso */
+  // si no tiene permiso 
   if (rolesPermitidos && !rolesPermitidos.includes(rol)) {
     return <Navigate to="/inicio" replace />;
   }
